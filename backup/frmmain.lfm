@@ -1,0 +1,119 @@
+object frmMain: TfrmMain
+  Left = 2137
+  Height = 536
+  Top = 12
+  Width = 348
+  Caption = 'TPS Tracker'
+  ClientHeight = 505
+  ClientWidth = 348
+  DesignTimePPI = 107
+  Menu = MainMenu
+  OnClose = FormClose
+  OnResize = FormResize
+  OnShow = FormShow
+  LCLVersion = '2.2.6.0'
+  object TimerGrid: TStringGrid
+    Left = 0
+    Height = 458
+    Top = 0
+    Width = 348
+    Align = alTop
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ColCount = 4
+    Columns = <    
+      item
+        MinSize = 0
+        MaxSize = 0
+        ReadOnly = True
+        Title.Caption = 'Project'
+      end    
+      item
+        MinSize = 100
+        MaxSize = 100
+        Title.Caption = 'Start/Stop'
+        Width = 100
+      end    
+      item
+        MinSize = 100
+        MaxSize = 100
+        Title.Caption = 'Reset'
+        Width = 100
+      end    
+      item
+        Alignment = taRightJustify
+        Font.Height = -15
+        Font.Name = 'Courier New'
+        Font.Style = [fsBold]
+        MinSize = 75
+        MaxSize = 75
+        Title.Caption = 'Time'
+        Width = 75
+      end>
+    FixedCols = 0
+    RowCount = 1
+    TabOrder = 0
+    OnDrawCell = TimerGridDrawCell
+    OnMouseDown = TimerGridMouseDown
+    OnMouseUp = TimerGridMouseUp
+  end
+  object FileOpenDialog: TOpenDialog
+    Title = 'Open TPS Timer file'
+    DefaultExt = '.TPL Timer files (.tplt)|.TXT|All files (.)|.'
+    FileName = '/var/home/wingf/apps/afterwriting'
+    InitialDir = '/var/home/wingf/apps/'
+    Left = 79
+    Top = 47
+  end
+  object MainMenu: TMainMenu
+    Left = 79
+    Top = 119
+    object FileMenu: TMenuItem
+      Caption = '&File'
+      object FileOpenMenu: TMenuItem
+        Caption = '&Open'
+        OnClick = FileOpenMenuClick
+      end
+      object ExitMenu: TMenuItem
+        Caption = 'E&xit'
+        OnClick = exitMenuClick
+      end
+    end
+  end
+  object UpdateTimer: TTimer
+    Interval = 5000
+    OnTimer = UpdateTimerTimer
+    Left = 88
+    Top = 216
+  end
+  object JSONConfig: TJSONPropStorage
+    StoredValues = <    
+      item
+        Name = 'ProjectListFile'
+        Value = '/home/wingf/OneDrive-UW/work-log/TPS Reports/projects_2024-02-08.tpsl'
+      end    
+      item
+        Name = 'OutFolder'
+        Value = '/home/wingf/OneDrive-UW/work-log/TPS Reports/'
+      end    
+      item
+        Name = 'TimeResolution'
+        Value = '0.25'
+      end>
+    JSONFileName = 'TPSTracker.json'
+    Formatted = True
+    Left = 90
+    Top = 296
+  end
+  object TPSDataset: TCSVDataset
+    FieldDefs = <>
+    CSVOptions.FirstLineAsFieldNames = True
+    CSVOptions.DefaultFieldLength = 255
+    CSVOptions.Delimiter = ','
+    CSVOptions.QuoteChar = '"'
+    CSVOptions.LineEnding = #10
+    CSVOptions.IgnoreOuterWhitespace = False
+    CSVOptions.QuoteOuterWhitespace = True
+    Left = 83
+    Top = 374
+  end
+end

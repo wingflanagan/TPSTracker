@@ -1,0 +1,28 @@
+object TPSDataModule: TTPSDataModule
+  OldCreateOrder = False
+  Height = 150
+  HorizontalOffset = 2277
+  VerticalOffset = 638
+  Width = 194
+  object MainMenu: TMainMenu
+    Left = 48
+    Top = 88
+    object FileMenu: TMenuItem
+      Caption = '&File'
+      object FileOpenMenu: TMenuItem
+        Caption = '&Open'
+      end
+      object ExitMenu: TMenuItem
+        Caption = 'E&xit'
+      end
+    end
+  end
+  object FileOpenDialog: TOpenDialog
+    Title = 'Open TPS Timer file'
+    DefaultExt = '.TPL Timer files (.tplt)|.TXT|All files (.)|.'
+    FileName = '/var/home/wingf/apps/afterwriting'
+    InitialDir = '/var/home/wingf/apps/'
+    Left = 48
+    Top = 16
+  end
+end

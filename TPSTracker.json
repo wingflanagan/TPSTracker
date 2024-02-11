@@ -1,0 +1,9 @@
+{
+  "TApplication" : {
+    "frmMain" : {
+      "ProjectListFile" : "/home/wingf/OneDrive-UW/work-log/TPS Reports/projects_2024-02-08.tpsl",
+      "OutFolder" : "/home/wingf/OneDrive-UW/work-log/TPS Reports/",
+      "TimeResolution" : "0.25"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+object TPSDataModule: TTPSDataModule
+  OldCreateOrder = False
+  Height = 150
+  HorizontalOffset = 2277
+  VerticalOffset = 638
+  Width = 194
+end
