@@ -20,7 +20,6 @@ begin
   Application.Scaled:=True;
   Application.Initialize;
   Application.CreateForm(TfrmMain, MainForm);
-  Application.CreateForm(TTPSDataModule, DataModule);
   Application.Run;
 end.
 

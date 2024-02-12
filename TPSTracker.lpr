@@ -10,7 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, frmMain, TimeTracker, TimerDictionary, WeeklyReportManager
+  Forms, sdflaz, frmMain, TimeTracker, TimerDictionary, WeeklyReportManager
   { you can add units after this };
 
 {$R *.res}

@@ -5,7 +5,7 @@ unit WeeklyReportManager;
 interface
 
 uses
-  Classes, SysUtils, DateUtils, TimeTracker, TimerDictionary, csvdataset, DB;
+  Classes, SysUtils, DateUtils, TimeTracker, TimerDictionary, SdfData, DB;
 
 type
 
@@ -15,20 +15,20 @@ type
   private
     FOutFolder: String;
     FFileName: String;
-    FCSVDataset: TCSVDataset;
+    FCSVDataset: TSdfDataset;
     FTimerDictionary: TTimerDictionary;
-    FCSVColumnNames: array[0..7] of String;
+    FTimeResolution: Double;
+    FInitialized: Boolean;
     function GetWeekStartDate: TDate;
     function GetWeekEndDate: TDate;
-    procedure CreateNewWeekFile();
     function FormatDate(ADate: TDate): String;
     function FileNameForWeek(StartDate, EndDate: TDate): String;
     procedure EnsureDirectoryExists;
-    procedure InitializeColumnNames;
     procedure InitializeDataset;
+    procedure CreateFileStructure;
   public
-    constructor Create(const OutFolder: String; CSVDataset: TCSVDataset;
-      TimerDict: TTimerDictionary);
+    constructor Create(const OutFolder: String; CSVDataset: TSdfDataset;
+      TimerDict: TTimerDictionary; TimeResolution: Double);
     procedure UpdateReport();
   end;
 
@@ -37,15 +37,16 @@ implementation
 { TWeeklyReportManager }
 
 constructor TWeeklyReportManager.Create(const OutFolder: String;
-  CSVDataset: TCSVDataset; TimerDict: TTimerDictionary);
+  CSVDataset: TSdfDataset; TimerDict: TTimerDictionary; TimeResolution: Double);
 begin
   inherited Create;
+  FInitialized := False;
   FOutFolder := IncludeTrailingPathDelimiter(OutFolder);
   EnsureDirectoryExists;
   FFileName := FOutFolder + FileNameForWeek(GetWeekStartDate, GetWeekEndDate);
   FCSVDataset := CSVDataset;
   FTimerDictionary := TimerDict;
-  InitializeColumnNames;
+  FTimeResolution := TimeResolution;
   InitializeDataset;
 end;
 
@@ -61,7 +62,7 @@ end;
 
 function TWeeklyReportManager.FormatDate(ADate: TDate): String;
 begin
-  Result := FormatDateTime('dddd, m/d/yyyy', ADate);
+  Result := FormatDateTime('dddd', ADate);
 end;
 
 function TWeeklyReportManager.FileNameForWeek(StartDate, EndDate: TDate): String;
@@ -77,99 +78,106 @@ begin
     CreateDir(FOutFolder);
 end;
 
-procedure TWeeklyReportManager.CreateNewWeekFile();
-var
-  SL: TStringList;
-  i: Integer;
-  Header: String;
-begin
-  SL := TStringList.Create;
-  Header := String.Empty;
-  try
-    // Add headers with dates, enclosed in double quotes
-    for i := Low(FCSVColumnNames) to High(FCSVColumnNames) do
-    begin
-      Header := Header + '"' + (FCSVColumnNames[i]) + '"';
-      if i < High(FCSVColumnNames) then Header := Header + ',';
-    end;
-    SL.Add(Header);
-
-    // Initialize rows for each project
-    for i := 0 to FTimerDictionary.Count - 1 do
-      SL.Add('"' + FTimerDictionary.ItemByIndex[i].ProjectName + '"' + ',,,,,,,');
-    SL.SaveToFile(FFileName);
-
-  finally
-    SL.Free;
-  end;
-end;
-
 procedure TWeeklyReportManager.UpdateReport();
 var
-  i: Integer;
+  i, TimePassed: Integer;
+  Hours: Double;
   CurrentField: TField;
+  TimeTracker: TTimeTracker;
 begin
-  FCSVDataset.First;
-  for i := 0 to FTimerDictionary.Count - 1 do
-  begin
-    FCSVDataset.Edit;
-    CurrentField := FCSVDataset.FieldByName(FormatDate(Now));
-    if Assigned(CurrentField) then
-      CurrentField.AsFloat := FTimerDictionary.ItemByIndex[i].CumulativeTime;
-    FCSVDataset.Post;
-    FCSVDataset.Next;
+  if not FInitialized then exit;
+  FCSVDataset.DisableControls;
+  try
+    FCSVDataset.First;
+    for i := 0 to FTimerDictionary.Count - 1 do
+    begin
+      CurrentField := FCSVDataset.FieldByName(FormatDate(Now));
+      if Assigned(CurrentField) then
+      begin
+        TimeTracker := FTimerDictionary.ItemByIndex[i];
+        if Assigned(TimeTracker) then
+        begin
+          TimePassed := TimeTracker.CumulativeTimeInSeconds;
+          if TimePassed > 0 then
+          begin
+            // Convert the seconds to hours
+            Hours := TimePassed / 3600;
+            // Round and quantize to the time resolution
+            Hours := Round(Hours / FTimeResolution) * FTimeResolution;
+            if Hours > CurrentField.AsFloat then
+            begin
+              FCSVDataset.Edit;
+              CurrentField.AsFloat := Hours;
+              FCSVDataset.Post;
+            end;
+          end;
+        end;
+      end;
+      FCSVDataset.Next;
+    end;
+  finally
+    FCSVDataset.EnableControls;
   end;
-  //FCSVDataset.;
-end;
-
-procedure TWeeklyReportManager.InitializeColumnNames;
-var
-  i: Integer;
-  StartDate: TDate;
-begin
-  StartDate := GetWeekStartDate;
-  FCSVColumnNames[0] := 'Projects';
-  for i := 1 to 7 do
-    FCSVColumnNames[i] := FormatDate(StartDate + (i - 1));
 end;
 
 procedure TWeeklyReportManager.InitializeDataset;
 var
   i: Integer;
+  Timer: TTimeTracker;
   CurrentField: TField;
-  FieldValue: String;
 begin
-  //if not FileExists(FFileName) then CreateNewWeekFile();
-
   with FCSVDataset do
   begin
     FileName := FFileName;
-    //Active := True;
-    if not FileExists(FFileName) then
-    begin
-      for i := Low(FCSVColumnNames) to High(FCSVColumnNames) do
-      begin
-        if i = 0 then
-          FieldDefs.Add(FCSVColumnNames[i], ftString)
-        else
-          FieldDefs.Add(FCSVColumnNames[i], ftFloat);
-      end;
-      //CreateDataset;
-      Active := True;
-      //FCSVDataset.First;
+    if not FileExists(FFileName) then CreateFileStructure;
+    Open;
+    if not Active then Active := True;
+    DisableControls;
+    try
+      First;
       for i := 0 to FTimerDictionary.Count - 1 do
       begin
-        Append;
-        CurrentField := FieldByName(FCSVColumnNames[0]);
+        CurrentField := FieldByName(FormatDate(Now));
         if Assigned(CurrentField) then
         begin
-          CurrentField.AsString := FTimerDictionary.ItemByIndex[i].ProjectName;
+          TimeTracker := FTimerDictionary.ItemByIndex[i];
+          if Assigned(TimeTracker) then
+          begin
+            TimeTracker.CumulativeTimeInSeconds :=
+              Round(CurrentField.AsFloat * 3600);
+          end;
         end;
-        Post;
+        Next;
       end;
-      //SaveToCSVFile(FileName);
+    finally
+      EnableControls;
     end;
-    if not Active then Active := True;
+  end;
+  FInitialized := True;
+end;
+
+procedure TWeeklyReportManager.CreateFileStructure;
+var
+  i: Integer;
+  FileContent: TStringList;
+  TimeTracker: TTimeTracker;
+begin
+  FileContent := TStringList.Create;
+  try
+    with FileContent do
+    begin
+      Add('Project,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday');
+      for i := 0 to FTimerDictionary.count - 1 do
+      begin
+        TimeTracker := FTimerDictionary.ItemByIndex[i];
+        if Assigned(TimeTracker) then
+          Add('"' + TimeTracker.ProjectName +
+            '",0.00,0.00,0.00,0.00,0.00,0.00,0.00');
+      end;
+      FileContent.SaveToFile(FFileName);
+    end;
+  finally
+    FileContent.Free;
   end;
 end;
 

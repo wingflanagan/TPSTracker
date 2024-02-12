@@ -6,15 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, ExtCtrls, Grids,
-  JSONPropStorage, TimeTracker, TimerDictionary, Types, csvdataset, DB,
-  WeeklyReportManager;
+  JSONPropStorage, DBGrids, StdCtrls, TimeTracker, TimerDictionary, Types, DB,
+  SdfData, WeeklyReportManager;
 
 type
 
   { TfrmMain }
 
   TfrmMain = class(TForm)
-    TPSDataset: TCSVDataset;
+    TotalHoursLabel: TLabel;
+    TotalHoursDisplay: TEdit;
+    TPSDataset: TSdfDataSet;
+    TPSDataSource: TDataSource;
+    TimerGrid: TDBGrid;
     ExitMenu: TMenuItem;
     FileMenu: TMenuItem;
     FileOpenDialog: TOpenDialog;
@@ -22,7 +26,6 @@ type
     JSONConfig: TJSONPropStorage;
     MainMenu: TMainMenu;
     UpdateTimer: TTimer;
-    TimerGrid: TStringGrid;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure ExitMenuClick(Sender: TObject);
@@ -32,21 +35,20 @@ type
     procedure FormShow(Sender: TObject);
     procedure LoadTimersFromFile(const FileName: String; TimerDict: TTimerDictionary);
     procedure ClearGrid(Grid: TStringGrid);
-    procedure TimerGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-      aRect: TRect; aState: TGridDrawState);
+    procedure TimerGridDrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure TimerGridMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure TimerGridMouseUp(Sender: TObject; Button: TMouseButton;
               Shift: TShiftState; X, Y: Integer);
     procedure UpdateTimerTimer(Sender: TObject);
-    procedure UpdateGridStatus;
   private
     FMouseIsDown: Boolean;
     FOutFolder: String;
     FTimeResolution: Double;
     FWeeklyReportManager: TWeeklyReportManager;
-    procedure PaintStartStopButton(Rect: TRect; Row: Integer; Pressed: Boolean);
-    procedure PaintResetButton(Rect: TRect; Row: Integer; Pressed: Boolean);
+    procedure PaintStartStopButton(Rect: TRect; Pressed: Boolean);
+    procedure PaintResetButton(Rect: TRect; Pressed: Boolean);
   public
 
   end;
@@ -102,13 +104,14 @@ begin
   with TimerGrid do
   begin
     Columns[0].Width := Self.Width - (Columns[1].Width + Columns[2].Width +
-      Columns[3].Width) - 3;
+      Columns[3].Width) - 24;
   end;
 end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 var
   ListFileName: String;
+  DayOfWeek: String;
 begin
   if FileExists(JSONConfig.JSONFileName) then
   begin
@@ -120,6 +123,9 @@ begin
       LoadTimersFromFile(ListFileName, TimerList);
     end;
   end;
+  // Only show the time column corresponding to the current day of week
+  DayOfWeek := FormatDateTime('dddd', Now);
+  TimerGrid.Columns[3].FieldName := DayOfWeek;
   // Set the timer interval for updating things to 1/4 the time resolution
   UpdateTimer.Interval := Round((FTimeResolution * 3600 * 1000) / 4);
   UpdateTimer.Enabled := True;
@@ -133,28 +139,20 @@ var
   TimeTracker: TTimeTracker;
 begin
   FileContent := TStringList.Create;
-  ClearGrid(TimerGrid);
   try
     FileContent.LoadFromFile(FileName);
-    TimerGrid.RowCount := FileContent.Count + 1; // Adjust the row count first to include all items plus header
     for i := 0 to FileContent.Count - 1 do
     begin
       ProjName := FileContent[i];
       if (ProjName <> '') and (TimerDict.Find(ProjName) = nil) then
       begin
         TimeTracker := TTimeTracker.Create(ProjName);
-        TimeTracker.TimeResolution := FTimeResolution;
         TimerDict.Add(ProjName, TimeTracker);
-        // Use i + 1 to start adding project names from the second row, leaving the first row as header
-        TimerGrid.Cells[0, i + 1] := ProjName;
-        TimerGrid.Cells[3, i + 1] := FormatFloat('0.00', TimerDict[ProjName].CumulativeTime);
-      end else begin
-        // If the project is found, adjust RowCount to avoid empty rows
-        TimerGrid.RowCount := TimerGrid.RowCount - 1;
       end;
     end;
     if not Assigned(FWeeklyReportManager) then
-       FWeeklyReportManager := TWeeklyReportManager.Create(FOutFolder, TPSDataset, TimerList);
+      FWeeklyReportManager := TWeeklyReportManager.Create(FOutFolder,
+        TPSDataset, TimerList, FTimeResolution);
   finally
     FileContent.Free;
   end;
@@ -166,39 +164,37 @@ begin
   Grid.Clear; // Clear content, but leaves the fixed row intact
 end;
 
-procedure TfrmMain.TimerGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-  aRect: TRect; aState: TGridDrawState);
+procedure TfrmMain.TimerGridDrawColumnCell(Sender: TObject; const Rect: TRect;
+  DataCol: Integer; Column: TColumn; State: TGridDrawState);
 var
-  ProjName, BtnText: String;
+  ProjName: String;
   Timer: TTimeTracker;
-  BtnTextHeight, BtnTextWidth: Integer;
 begin
-  if (aRow > 0) then
+  if (DataCol > 0) then
   begin
     with TimerGrid.Canvas do
     begin
-      if (aCol = 1) then
+      if (DataCol = 1) then
       begin
-        ProjName := TimerGrid.Cells[0, aRow];
+        ProjName := TPSDataset.FieldByName('Project').AsString;
         Timer := TimerList[ProjName];
         if Assigned(Timer) then
         begin
-
           if Timer.IsRunning then
-            PaintStartStopButton(aRect, aRow, True)
+            PaintStartStopButton(Rect, True)
           else
-            PaintStartStopButton(aRect, aRow, False);
-
+            PaintStartStopButton(Rect, False);
         end;
-      end else if (aCol = 2) then
+      end else if (DataCol = 2) then
       begin
-        PaintResetButton(aRect, aRow, FMouseIsDown);
+        PaintResetButton(Rect, FMouseIsDown);
       end;
     end;
   end;
+  TimerGrid.DefaultDrawColumnCell(Rect, DataCol, Column, State);
 end;
 
-procedure TfrmMain.PaintStartStopButton(Rect: TRect; Row: Integer; Pressed: Boolean);
+procedure TfrmMain.PaintStartStopButton(Rect: TRect; Pressed: Boolean);
 var
   BtnText: String;
   BtnTextHeight, BtnTextWidth: Integer;
@@ -212,14 +208,14 @@ begin
       BtnTextWidth:= TextWidth(BtnText);
       Brush.Color := clMoneyGreen;
       FillRect(Rect);
-      Frame3D(Rect, clBtnShadow, clBtnHighlight, 3);
+      Frame3D(Rect, clBtnShadow, clBtnHighlight, 2);
     end else begin
       BtnText := 'Stopped';
       BtnTextHeight := TextHeight(BtnText);
       BtnTextWidth:= TextWidth(BtnText);
       Brush.Color := clBtnFace;
       FillRect(Rect);
-      Frame3D(Rect, clBtnHighlight, clBtnShadow, 3);
+      Frame3D(Rect, clBtnHighlight, clBtnShadow, 2);
     end;
     TextOut(Rect.Left + ((Rect.Right - Rect.Left) div 2) - (BtnTextWidth div 2),
       Rect.Top + ((Rect.Bottom - Rect.Top) div 2) - (BtnTextHeight div 2),
@@ -227,7 +223,7 @@ begin
   end;
 end;
 
-procedure TfrmMain.PaintResetButton(Rect: TRect; Row: Integer; Pressed: Boolean);
+procedure TfrmMain.PaintResetButton(Rect: TRect; Pressed: Boolean);
 var
   BtnText: String;
   BtnTextHeight, BtnTextWidth: Integer;
@@ -241,9 +237,9 @@ begin
     FillRect(Rect);
 
     if Pressed then
-       Frame3D(Rect, clBtnShadow, clBtnHighlight, 3)
+       Frame3D(Rect, clBtnShadow, clBtnHighlight, 2)
     else
-      Frame3D(Rect, clBtnHighlight, clBtnShadow, 3);
+      Frame3D(Rect, clBtnHighlight, clBtnShadow, 2);
 
     TextOut(Rect.Left + ((Rect.Right - Rect.Left) div 2) - (BtnTextWidth div 2),
       Rect.Top + ((Rect.Bottom - Rect.Top) div 2) - (BtnTextHeight div 2),
@@ -277,7 +273,7 @@ begin
   // Check if a non-header row and a button column was clicked
   if (Row > 0) and (Col in [1, 2, 3]) then
   begin
-    ProjName := TimerGrid.Cells[0, Row]; // Get the project name from the first column
+    ProjName := TPSDataset.FieldByName('Project').AsString;
     Timer := TimerList[ProjName];
     if Assigned(Timer) then
     begin
@@ -294,34 +290,24 @@ begin
         Timer.Reset;
         TimerGrid.InvalidateCell(2, Row);
       end;
-      UpdateGridStatus;
     end;
   end;
-
 end;
 
 procedure TfrmMain.UpdateTimerTimer(Sender: TObject);
-begin
-  UpdateGridStatus;
-  FWeeklyReportManager.UpdateReport();
-end;
-
-procedure TfrmMain.UpdateGridStatus;
 var
-  Row: Integer;
-  Timer: TTimeTracker;
-  ProjName: String;
+  Hours: DOuble;
+  TimePassed: Integer;
 begin
-  for Row := 1 to TimerGrid.RowCount - 1 do
-  begin
-    ProjName := TimerGrid.Cells[0, Row];
-    Timer := TimerList[ProjName];
-    if Assigned(Timer) then
-    begin
-      Timer.UpdateCumulativeTime;
-      TimerGrid.Cells[3, Row] := FormatFloat('0.00', Timer.CumulativeTime);
-    end;
-  end;
+  FWeeklyReportManager.UpdateReport();
+
+  TimePassed := TimerList.TotalTimeInSeconds;
+  // Convert the seconds to hours
+  Hours := TimePassed / 3600;
+  // Round and quantize to the time resolution
+  Hours := Round(Hours / FTimeResolution) * FTimeResolution;
+
+  TotalHoursDisplay.Text := FormatFloat('0.00', Hours);
 end;
 
 end.
