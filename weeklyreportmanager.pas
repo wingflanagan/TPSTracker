@@ -5,7 +5,7 @@ unit WeeklyReportManager;
 interface
 
 uses
-  Classes, SysUtils, DateUtils, TimeTracker, TimerDictionary, SdfData, DB;
+  Classes, SysUtils, DateUtils, TimeTracker, TimerDictionary, SdfData, DB, Math;
 
 type
 
@@ -30,6 +30,7 @@ type
     constructor Create(const OutFolder: String; CSVDataset: TSdfDataset;
       TimerDict: TTimerDictionary; TimeResolution: Double);
     procedure UpdateReport();
+    function AdjustTimeToResolution(TimePassedInSeconds: Double): Double;
   end;
 
 implementation
@@ -80,8 +81,8 @@ end;
 
 procedure TWeeklyReportManager.UpdateReport();
 var
-  i, TimePassed: Integer;
-  Hours: Double;
+  i: Integer;
+  AdjustedTime, TimePassed, Hours: Double;
   CurrentField: TField;
   TimeTracker: TTimeTracker;
 begin
@@ -101,9 +102,7 @@ begin
           if TimePassed > 0 then
           begin
             // Convert the seconds to hours
-            Hours := TimePassed / 3600;
-            // Round and quantize to the time resolution
-            Hours := Round(Hours / FTimeResolution) * FTimeResolution;
+            Hours := AdjustTimeToResolution(TimePassed);
             if Hours > CurrentField.AsFloat then
             begin
               FCSVDataset.Edit;
@@ -178,6 +177,27 @@ begin
     end;
   finally
     FileContent.Free;
+  end;
+end;
+
+function TWeeklyReportManager.AdjustTimeToResolution(TimePassedInSeconds: Double): Double;
+var
+  Hours, AdjustedTime: Double;
+begin
+  // Convert the seconds to hours
+  Hours := TimePassedInSeconds / 3600;
+  // Special handling for values between 0 and FTimeResolution
+  if (Hours > 0) and (Hours < FTimeResolution) then
+    Exit(FTimeResolution)
+  else
+  begin
+    // Adjust the hours according to the time resolution before applying Ceil, then scale back
+    AdjustedTime := Ceil(Hours / FTimeResolution) * FTimeResolution;
+    // If the original Hours is exactly on a resolution boundary, don't round up
+    if Hours = (Trunc(Hours / FTimeResolution) * FTimeResolution) then
+      Result := Hours
+    else
+      Result := AdjustedTime;
   end;
 end;
 

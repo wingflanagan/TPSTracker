@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Menus, ExtCtrls, Grids,
   JSONPropStorage, DBGrids, StdCtrls, TimeTracker, TimerDictionary, Types, DB,
-  SdfData, WeeklyReportManager;
+  SdfData, WeeklyReportManager, Math;
 
 type
 
@@ -129,6 +129,8 @@ begin
   // Set the timer interval for updating things to 1/4 the time resolution
   UpdateTimer.Interval := Round((FTimeResolution * 3600 * 1000) / 4);
   UpdateTimer.Enabled := True;
+  // Go ahead and update right out of the gate
+  UpdateTimerTimer(UpdateTimer);
 end;
 
 procedure TfrmMain.LoadTimersFromFile(const FileName: String; TimerDict: TTimerDictionary);
@@ -285,6 +287,7 @@ begin
         end else begin
           TimerList.Start(ProjName);
         end;
+        TimerGrid.InvalidateCell(1, Row);
       end else if Col = 2 then
       begin
         Timer.Reset;
@@ -296,18 +299,15 @@ end;
 
 procedure TfrmMain.UpdateTimerTimer(Sender: TObject);
 var
-  Hours: DOuble;
-  TimePassed: Integer;
+  TimePassed, Hours: Double;
 begin
   FWeeklyReportManager.UpdateReport();
 
   TimePassed := TimerList.TotalTimeInSeconds;
   // Convert the seconds to hours
-  Hours := TimePassed / 3600;
-  // Round and quantize to the time resolution
-  Hours := Round(Hours / FTimeResolution) * FTimeResolution;
-
-  TotalHoursDisplay.Text := FormatFloat('0.00', Hours);
+  Hours := FWeeklyReportManager.AdjustTimeToResolution(TimePassed);
+  // Show it...
+  TotalHoursDisplay.Text := Format('%0.2f', [Hours]);
 end;
 
 end.

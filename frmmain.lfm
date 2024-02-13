@@ -41,7 +41,7 @@ object frmMain: TfrmMain
       end    
       item
         Alignment = taRightJustify
-        Title.Caption = 'Sunday'
+        Title.Caption = 'Time'
         Width = 100
         FieldName = 'Sunday'
         DisplayFormat = '0.00'
@@ -62,7 +62,7 @@ object frmMain: TfrmMain
     Top = 576
     Width = 89
     Alignment = taRightJustify
-    Anchors = [akTop, akRight, akBottom]
+    Anchors = [akRight, akBottom]
     Font.Height = -15
     Font.Name = 'Courier New'
     Font.Style = [fsBold]

@@ -2,14 +2,66 @@
 <CONFIG>
   <ProjectSession>
     <Version Value="12"/>
-    <BuildModes Active="Default"/>
+    <BuildModes Active="Debug">
+      <Item Name="Debug">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="TPSTracker"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item>
+      <Item Name="Release">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="TPSTracker"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <Optimizations>
+              <OptimizationLevel Value="4"/>
+            </Optimizations>
+            <SmallerCode Value="True"/>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item>
+    </BuildModes>
     <Units>
       <Unit>
         <Filename Value="TPSTracker.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="4"/>
-        <CursorPos X="5" Y="5"/>
-        <UsageCount Value="96"/>
+        <CursorPos X="36" Y="14"/>
+        <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -20,20 +72,18 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="frmMain"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="197"/>
-        <CursorPos X="51" Y="211"/>
-        <UsageCount Value="96"/>
+        <CursorPos X="30" Y="18"/>
+        <UsageCount Value="100"/>
         <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="timetracker.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TimeTracker"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="8"/>
+        <TopLine Value="31"/>
         <CursorPos X="38" Y="32"/>
-        <UsageCount Value="96"/>
+        <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -41,9 +91,9 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="TimerDictionary"/>
         <EditorIndex Value="3"/>
-        <TopLine Value="8"/>
-        <CursorPos X="24" Y="28"/>
-        <UsageCount Value="96"/>
+        <TopLine Value="68"/>
+        <CursorPos Y="106"/>
+        <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -53,16 +103,15 @@
         <ResourceBaseClass Value="DataModule"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="54" Y="11"/>
-        <UsageCount Value="96"/>
+        <UsageCount Value="100"/>
       </Unit>
       <Unit>
         <Filename Value="weeklyreportmanager.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="WeeklyReportManager"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="86"/>
-        <CursorPos X="13" Y="107"/>
-        <UsageCount Value="95"/>
+        <CursorPos Y="39"/>
+        <UsageCount Value="99"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -81,90 +130,6 @@
       </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="103" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="104" Column="14" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="107" Column="45" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="113" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="104" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="107" Column="45" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="89" TopLine="82"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="96" TopLine="58"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="138" Column="29" TopLine="125"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="139" TopLine="101"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="298" Column="6" TopLine="264"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="42" Column="49" TopLine="14"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="125" Column="42" TopLine="106"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="126" Column="47" TopLine="107"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="130" Column="39" TopLine="109"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="90" Column="6" TopLine="74"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="113" Column="9" TopLine="102"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="43" Column="19" TopLine="34"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="134" Column="24" TopLine="114"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="102" Column="16" TopLine="64"/>
-      </Position>
-      <Position>
-        <Filename Value="weeklyreportmanager.pas"/>
-        <Caret Line="81" Column="11" TopLine="64"/>
-      </Position>
       <Position>
         <Filename Value="weeklyreportmanager.pas"/>
         <Caret Line="147" Column="50" TopLine="122"/>
@@ -200,6 +165,89 @@
       <Position>
         <Filename Value="frmmain.pas"/>
         <Caret Line="45" TopLine="26"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="253" TopLine="228"/>
+      </Position>
+      <Position>
+        <Filename Value="timerdictionary.pas"/>
+        <Caret Line="30" Column="24" TopLine="30"/>
+      </Position>
+      <Position>
+        <Filename Value="timerdictionary.pas"/>
+        <Caret Line="144" Column="11" TopLine="125"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="294" Column="9" TopLine="279"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="119" Column="10" TopLine="109"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="101" Column="33" TopLine="89"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="102" Column="16" TopLine="84"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="93" Column="10" TopLine="87"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="8" Column="81"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="307" Column="19" TopLine="281"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="10" Column="38"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="189" TopLine="171"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="307" TopLine="273"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="105" Column="22" TopLine="87"/>
+      </Position>
+      <Position>
+        <Filename Value="weeklyreportmanager.pas"/>
+        <Caret Line="39"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="308" Column="11" TopLine="272"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="200" TopLine="162"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="294" Column="9" TopLine="274"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="139" Column="28" TopLine="113"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="295" Column="9" TopLine="263"/>
       </Position>
     </JumpHistory>
     <RunParams>
