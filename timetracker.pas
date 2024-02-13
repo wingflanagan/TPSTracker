@@ -17,7 +17,6 @@ type
     FIsRunning: Boolean;
     FProjectName: string;
     FLastCheckedTime: TDateTime;
-    FCurrentTime: TDateTime;
     FCumulativeTimeInSeconds: Integer;
     procedure SetProjectName(AValue: string);
     function GetCumulativeTimeInSeconds: Integer;
