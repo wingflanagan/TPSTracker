@@ -21,9 +21,9 @@ type
     FList: TList;
     function GetItem(Index: String): TTimeTracker;
     procedure SetItem(Index: String; AValue: TTimeTracker);
-    function GetTotalTime: Double;
     function GetCount: Integer;
     function GetItemByIndex(Index: Integer): TTimeTracker;
+    function GetTotalTimeInSeconds: Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -33,11 +33,10 @@ type
     procedure Start(const Name: String);
     procedure Stop(const Name: String);
     procedure StopAll;
-    procedure UpdateTrackedTime;
     property Items[Index: String]: TTimeTracker read GetItem write SetItem; default;
     property ItemByIndex[Index: Integer]: TTimeTracker read GetItemByIndex;
-    property TotalTime: Double read GetTotalTime;
     property Count: Integer read GetCount;
+    property TotalTimeInSeconds: Integer read GetTotalTimeInSeconds;
   end;
 
 implementation
@@ -118,19 +117,6 @@ begin
   Add(Index, AValue);
 end;
 
-function TTimerDictionary.GetTotalTime: Double;
-var
-  i: Integer;
-  Pair: PNameTrackerPair;
-begin
-  Result := 0;
-  for i := 0 to FList.Count - 1 do
-  begin
-    Pair := FList.Items[i];
-    Result := Result + Pair^.Tracker.CumulativeTime;
-  end;
-end;
-
 function TTimerDictionary.GetCount: Integer;
 begin
   Result := FList.Count;
@@ -168,16 +154,16 @@ begin
     GetItemByIndex(i).Stop;
 end;
 
-procedure TTimerDictionary.UpdateTrackedTime;
+function TTimerDictionary.GetTotalTimeInSeconds: Integer;
 var
   i: Integer;
 begin
+  Result := 0;
+
   for i := 0 to FList.Count - 1 do
   begin
-    if GetItemByIndex(i).IsRunning then
-      GetItemByIndex(i).UpdateCumulativeTime;
+    Result := Result + GetItemByIndex(i).CumulativeTimeInSeconds;
   end;
 end;
 
 end.
-
